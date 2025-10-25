@@ -225,6 +225,69 @@
 })();
 </script>
 
+
+
+
+
+<script>
+(function(){
+  const track = document.getElementById('tabsTrack');
+  const container = document.getElementById('tabsContainer');
+  const btnL = document.getElementById('btnLeft');
+  const btnR = document.getElementById('btnRight');
+  let pos = 0;
+  let maxScroll = 0;
+  let startX = 0, dragStart = 0, isDown = false;
+
+  function updateLimits(){
+    const trackWidth = track.scrollWidth;
+    const viewport = container.clientWidth;
+    maxScroll = Math.max(0, trackWidth - viewport);
+    pos = Math.max(-maxScroll, Math.min(0, pos));
+    track.style.transform = `translateX(${pos}px)`;
+    btnL.disabled = pos === 0;
+    btnR.disabled = Math.abs(pos) >= maxScroll;
+  }
+
+  function scrollBy(direction){
+    const step = Math.round(container.clientWidth * 0.6);
+    pos += (direction === 'left') ? step : -step;
+    pos = Math.max(-maxScroll, Math.min(0, pos));
+    track.style.transform = `translateX(${pos}px)`;
+    updateLimits();
+  }
+
+  btnL.addEventListener('click', ()=> scrollBy('left'));
+  btnR.addEventListener('click', ()=> scrollBy('right'));
+
+  track.addEventListener('pointerdown', (e)=>{
+    isDown = true;
+    startX = e.clientX;
+    dragStart = pos;
+    track.style.transition = 'none';
+    track.setPointerCapture(e.pointerId);
+  });
+  window.addEventListener('pointermove', (e)=>{
+    if(!isDown) return;
+    const dx = e.clientX - startX;
+    pos = dragStart + dx;
+    if(pos > 80) pos = 80;
+    if(pos < -maxScroll - 80) pos = -maxScroll - 80;
+    track.style.transform = `translateX(${pos}px)`;
+  });
+  window.addEventListener('pointerup', ()=>{
+    if(!isDown) return;
+    isDown = false;
+    track.style.transition = 'transform .35s ease';
+    pos = Math.max(-maxScroll, Math.min(0, pos));
+    track.style.transform = `translateX(${pos}px)`;
+    updateLimits();
+  });
+  window.addEventListener('resize', updateLimits);
+  window.addEventListener('load', ()=> setTimeout(updateLimits, 80));
+})();
+</script>
+
 </body>
 
 
